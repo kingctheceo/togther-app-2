@@ -1696,32 +1696,35 @@ st.markdown('</div>', unsafe_allow_html=True)  # Close app-container
 st.markdown("<div style='height: 100px;'></div>", unsafe_allow_html=True)
 
 
+       with tab3:
+    st.markdown("### Welcome Back")
+    st.markdown("""
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-title">Welcome Back!</div>
+            <div class="auth-subtitle">Please enter your username to sign in.</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    with st.form("login_form", clear_on_submit=True):
+        username = st.text_input("Username", placeholder="Enter your username", max_chars=20)
+
         if st.form_submit_button("Sign In", use_container_width=True):
             if username:
-                user = c.execute("SELECT * FROM users WHERE username = ?",
-                                 (username, )).fetchone()
+                user = c.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
                 if user:
                     st.session_state.current_user = {
-                        'id':
-                        user[0],
-                        'name':
-                        user[1],
-                        'username':
-                        user[2],
-                        'age':
-                        user[3],
-                        'avatar':
-                        user[4],
-                        'role':
-                        user[5],
-                        'bio':
-                        user[6],
-                        'family_code':
-                        user[7],
-                        'parental_controls':
-                        bool(user[8]) if len(user) > 8 else user[3] < 13,
-                        'linked_parent':
-                        user[9] if len(user) > 9 else None
+                        'id': user[0],
+                        'name': user[1],
+                        'username': user[2],
+                        'age': user[3],
+                        'avatar': user[4],
+                        'role': user[5],
+                        'bio': user[6],
+                        'family_code': user[7],
+                        'parental_controls': bool(user[8]) if len(user) > 8 else user[3] < 13,
+                        'linked_parent': user[9] if len(user) > 9 else None
                     }
                     st.success("Successfully signed in! 🎉")
                     st.session_state.page = "Feed"
@@ -1729,4 +1732,4 @@ st.markdown("<div style='height: 100px;'></div>", unsafe_allow_html=True)
                 else:
                     st.error("User not found. Please check your username.")
             else:
-                st.error("Please enter your username.")
+                st.error("Please enter your username")
