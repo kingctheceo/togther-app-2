@@ -1027,8 +1027,9 @@ if not check_login():
                         else:
                             st.error("Please fill in all required fields")
 
-    with tab3:
+with tab3:
     st.markdown("### Welcome Back")
+    
     with st.form("login_form", clear_on_submit=True):
         username = st.text_input("Username", placeholder="Enter your username")
 
@@ -1057,7 +1058,7 @@ if not check_login():
                 st.warning("Enter your username to continue.")
 
 # Main app container
-    st.markdown('<div class="app-container">', unsafe_allow_html=True)
+st.markdown('<div class="app-container">', unsafe_allow_html=True)
 
 # Header
 user = st.session_state.get("current_user")
