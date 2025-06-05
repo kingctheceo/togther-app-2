@@ -600,17 +600,21 @@ tables = [
         invite_code TEXT UNIQUE, 
         created_by TEXT, 
         timestamp TEXT
-    )''', '''CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY, 
-        name TEXT, 
-        username TEXT UNIQUE, 
-        age INTEGER, 
-        avatar TEXT, 
-        role TEXT, 
-        bio TEXT, 
-        family_code TEXT,
-        parental_controls BOOLEAN DEFAULT 0,
-        linked_parent TEXT
+    )''', c.execute('''
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    username TEXT UNIQUE,
+    age INTEGER,
+    avatar TEXT,
+    role TEXT,
+    bio TEXT,
+    family_code TEXT,
+    parental_controls BOOLEAN DEFAULT 0,
+    linked_parent TEXT,
+    password_hash TEXT
+)
+''')
     )''', '''CREATE TABLE IF NOT EXISTS posts (
         id TEXT PRIMARY KEY, 
         user_id TEXT, 
