@@ -6,6 +6,7 @@ import json
 import base64
 from PIL import Image
 import io
+import hashlib
 
 # Page config with Instagram-like styling
 st.set_page_config(page_title="Together - Family Social App",
