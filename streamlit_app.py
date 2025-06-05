@@ -1103,21 +1103,23 @@ if 'page' in query_params:
 nav_html = '<div class="bottom-nav">'
 for page, icon in nav_items:
     active_class = "active" if st.session_state.page == page else ""
-    nav_html += f'''
-    <a href="?page={page}" class="nav-item {active_class}">
-        <div>{icon}</div>
-        <div class="nav-label">{page}</div>
-    </a>
-    '''
+    nav_html += (
+        f'<a href="?page={page}" class="nav-item {active_class}">'
+        f'<div>{icon}</div>'
+        f'<div class="nav-label">{page}</div>'
+        f'</a>'
+    )
 nav_html += '</div>'
+
 st.markdown(nav_html, unsafe_allow_html=True)
 
 # Page Content
-if st.session_state.page == "Feed":
-    # Stories Section
-    family_users = c.execute(
-        "SELECT name, username, avatar FROM users WHERE family_code = ?",
-        (st.session_state.family_code, )).fetchall()
+if 'page' not in st.session_state:
+    st.session_state.page = "Feed"
+
+query_params = st.query_params
+if 'page' in query_params:
+    st.session_state.page = query_params['page']
 
     if family_users:
         stories_html = '<div class="stories-container">'
