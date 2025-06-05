@@ -1060,6 +1060,8 @@ with tab3:
             else:
                 st.warning("Enter your username to continue.")
 
+ # Stop app here if not logged in
+    st.stop()
 
 # Main app container
 st.markdown('<div class="app-container">', unsafe_allow_html=True)
