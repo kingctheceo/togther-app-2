@@ -1027,6 +1027,8 @@ if not check_login():
                         else:
                             st.error("Please fill in all required fields")
 
+tab1, tab2, tab3 = st.tabs(["Register", "Join Family", "Sign In"])
+
 with tab3:
     st.markdown("### Welcome Back")
     
@@ -1056,6 +1058,7 @@ with tab3:
                     st.error("Username not found.")
             else:
                 st.warning("Enter your username to continue.")
+
 
 # Main app container
 st.markdown('<div class="app-container">', unsafe_allow_html=True)
