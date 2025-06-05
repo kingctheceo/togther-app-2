@@ -1667,21 +1667,4 @@ st.markdown('</div>', unsafe_allow_html=True)  # Close app-container
 
 # Add bottom spacing for navigation
 st.markdown("<div style='height: 100px;'></div>", unsafe_allow_html=True)
-# Sign In Flow
-with tab3:
-    st.markdown("### Welcome Back")
-    st.markdown("""
-    <div class="auth-container">
-        <div class="auth-header">
-            <div class="auth-title">Welcome Back!</div>
-            <div class="auth-subtitle">Please enter your username to sign in.</div>
-        </div>
-    </div>
-    """,
-                unsafe_allow_html=True)
 
-    with st.form("login_form", clear_on_submit=True):
-        username = st.text_input("Username",
-                                 placeholder="Enter your username",
-                                 max_chars=20,
-                                 disabled=False)
