@@ -1695,7 +1695,6 @@ st.markdown('</div>', unsafe_allow_html=True)  # Close app-container
 # Add bottom spacing for navigation
 st.markdown("<div style='height: 100px;'></div>", unsafe_allow_html=True)
 # Sign In Flow
-with tab3:
     st.markdown("### Welcome Back")
     st.markdown("""
     <div class="auth-container">
