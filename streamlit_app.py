@@ -1027,11 +1027,11 @@ if not check_login():
                         else:
                             st.error("Please fill in all required fields")
 
-            with tab3:
+    with tab3:
     st.markdown("### Welcome Back")
     with st.form("login_form", clear_on_submit=True):
         username = st.text_input("Username", placeholder="Enter your username")
-        
+
         if st.form_submit_button("Sign In", use_container_width=True):
             if username:
                 user = c.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
