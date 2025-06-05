@@ -1676,4 +1676,29 @@ st.markdown('</div>', unsafe_allow_html=True)  # Close app-container
 # Add bottom spacing for navigation
 st.markdown("<div style='height: 100px;'></div>", unsafe_allow_html=True)
 
+# === PAGE ROUTING ===
+if st.session_state.page == "Feed":
+    # Feed page code goes here
+    st.header("📸 Family Feed")
+    # Load and show posts, allow new post creation, likes, comments, etc.
+
+elif st.session_state.page == "Chores":
+    st.header("🧹 Chores")
+    # Show chore list, assign chores, mark done, reward points
+
+elif st.session_state.page == "Mood":
+    st.header("😊 Mood & Journal")
+    # Mood selection + daily journal entry
+
+elif st.session_state.page == "Learning" and has_parental_controls():
+    st.header("🧠 Learning Center")
+    # Educational content, quizzes, scores
+
+elif st.session_state.page == "Browser" and has_parental_controls():
+    st.header("🌐 Kid-Safe Browser")
+    # Embedded browser logic or links with filtering
+
+elif st.session_state.page == "Family":
+    st.header("👨‍👩‍👧‍👦 Family Zone")
+    # Library, books, achievements, emergency alerts, messaging
 
