@@ -1028,52 +1028,33 @@ if not check_login():
                             st.error("Please fill in all required fields")
 
             with tab3:
-                st.markdown("### Welcome Back")
-                with st.form("login", clear_on_submit=True):
-                    username = st.text_input("Username",
-                                             placeholder="Enter your username")
-
-                    if st.form_submit_button("Sign In",
-                                             use_container_width=True):
-                        if username:
-                            user = c.execute(
-                                "SELECT * FROM users WHERE username = ?",
-                                (username, )).fetchone()
-                            if user:
-                                st.session_state.current_user = {
-                                    'id':
-                                    user[0],
-                                    'name':
-                                    user[1],
-                                    'username':
-                                    user[2],
-                                    'age':
-                                    user[3],
-                                    'avatar':
-                                    user[4],
-                                    'role':
-                                    user[5],
-                                    'bio':
-                                    user[6],
-                                    'family_code':
-                                    user[7],
-                                    'parental_controls':
-                                    bool(user[8])
-                                    if len(user) > 8 else user[3] < 13,
-                                    'linked_parent':
-                                    user[9] if len(user) > 9 else None
-                                }
-                                st.session_state.family_code = user[7]
-                                st.rerun()
-                            else:
-                                st.error(
-                                    "User not found. Please check your username or create a new account."
-                                )
-                        else:
-                            st.error("Please enter your username")
-
-        st.markdown('</div>', unsafe_allow_html=True)
-        st.stop()
+    st.markdown("### Welcome Back")
+    with st.form("login_form", clear_on_submit=True):
+        username = st.text_input("Username", placeholder="Enter your username")
+        
+        if st.form_submit_button("Sign In", use_container_width=True):
+            if username:
+                user = c.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+                if user:
+                    st.session_state.current_user = {
+                        'id': user[0],
+                        'name': user[1],
+                        'username': user[2],
+                        'age': user[3],
+                        'avatar': user[4],
+                        'role': user[5],
+                        'bio': user[6],
+                        'family_code': user[7],
+                        'parental_controls': bool(user[8]) if len(user) > 8 else user[3] < 13,
+                        'linked_parent': user[9] if len(user) > 9 else None
+                    }
+                    st.success("Welcome back!")
+                    st.session_state.page = "Feed"
+                    st.rerun()
+                else:
+                    st.error("Username not found.")
+            else:
+                st.warning("Enter your username to continue.")
 
 # Main app container
 st.markdown('<div class="app-container">', unsafe_allow_html=True)
