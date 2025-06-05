@@ -1027,7 +1027,8 @@ if not check_login():
                         else:
                             st.error("Please fill in all required fields")
 
-tab1, tab2, tab3 = st.tabs(["Register", "Join Family", "Sign In"])
+tab1, tab2, tab3 = st.tabs(
+                ["🏠 Create Family", "👥 Join Family", "🔑 Sign In"])
 
 with tab3:
     st.markdown("### Welcome Back")
