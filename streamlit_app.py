@@ -725,9 +725,19 @@ default_sites = [
 ]
 
 for site in default_sites:
-    c.execute("INSERT OR IGNORE INTO safe_sites VALUES (?, ?, ?, ?, ?, ?)",
-              (str(uuid.uuid4()), site[0], site[1], site[2], site[3],
-               datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+   c.execute("""
+    INSERT OR IGNORE INTO safe_sites
+      (id, name, url, description, approved_by, timestamp)
+    VALUES (?, ?, ?, ?, ?, ?)
+""", (
+    str(uuid.uuid4()),
+    site[0],
+    site[1],
+    site[2],
+    site[3],
+    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+))
+
 
 conn.commit()
 
