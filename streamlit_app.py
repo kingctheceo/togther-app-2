@@ -785,25 +785,24 @@ if not check_login():
                 <div class="app-logo">Together</div>
                 <div class="app-tagline">Where Families Connect</div>
                 <div class="app-description">
-                    A safe, private social space designed for families to share moments, 
+                    A safe, private social space designed for families to share moments,
                     stay connected, and grow together with smart parental controls.
                 </div>
             </div>
         </div>
-        """,
-                    unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            if st.button("🚀 Start Your Family Journey",
-                         key="welcome_btn",
-                         use_container_width=True):
+            if st.button("Start Your Family Journey", key="welcome_btn", use_container_width=True):
                 st.session_state.auth_step = "auth"
                 st.rerun()
 
     elif st.session_state.auth_step == "auth":
+        # Wrap everything in a single <div class="app-container">
         st.markdown('<div class="app-container">', unsafe_allow_html=True)
 
+        # Center the tabs horizontally
         col1, col2, col3 = st.columns([1, 10, 1])
         with col2:
             st.markdown("""
@@ -813,33 +812,26 @@ if not check_login():
                     <div class="auth-subtitle">Choose how you'd like to join your family</div>
                 </div>
             </div>
-            """,
-                        unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-            tab1, tab2, tab3 = st.tabs(
-                ["🏠 Create Family", "👥 Join Family", "🔑 Sign In"])
+            # Define the three tabs: Create Family, Join Family, Sign In
+            tab1, tab2, tab3 = st.tabs(["🏠 Create Family", "👥 Join Family", "🔑 Sign In"])
 
+            # --------------------
+            # Tab 1: Create Family
+            # --------------------
             with tab1:
                 st.markdown("### Start Your Family")
                 with st.form("create_family", clear_on_submit=True):
-                    family_name = st.text_input("Family Name",
-                                                placeholder="The Smith Family")
-                    creator_name = st.text_input("Your Full Name",
-                                                 placeholder="John Smith")
-                    creator_username = st.text_input("Choose Username",
-                                                     placeholder="johnsmith")
-                    creator_age = st.number_input("Your Age",
-                                                  min_value=1,
-                                                  max_value=100,
-                                                  value=30)
-                    creator_bio = st.text_area(
-                        "About You (Optional)",
-                        placeholder="Tell your family about yourself...")
+                    family_name = st.text_input("Family Name", placeholder="The Smith Family")
+                    creator_name = st.text_input("Your Full Name", placeholder="John Smith")
+                    creator_username = st.text_input("Choose Username", placeholder="johnsmith")
+                    creator_password = st.text_input("Choose Password", type="password", placeholder="••••••")
+                    creator_age = st.number_input("Your Age", min_value=1, max_value=100, value=30)
+                    creator_bio = st.text_area("About You (Optional)", placeholder="Tell your family about yourself...")
 
-                    uploaded_file = st.file_uploader(
-                        "Upload Profile Picture", type=['png', 'jpg', 'jpeg'])
+                    uploaded_file = st.file_uploader("Upload Profile Picture", type=['png', 'jpg', 'jpeg'])
                     avatar_url = process_uploaded_image(uploaded_file)
-
                     if not avatar_url:
                         avatar_options = [
                             "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face",
@@ -847,13 +839,15 @@ if not check_login():
                             "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
                             "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
                         ]
-                        avatar_url = st.selectbox("Or Choose Default Avatar",
-                                                  avatar_options)
+                        avatar_url = st.selectbox("Or Choose Default Avatar", avatar_options)
 
-                    if st.form_submit_button("Create Family",
-                                             use_container_width=True):
-                        if family_name and creator_name and creator_username:
+                    if st.form_submit_button("Create Family", use_container_width=True):
+                        # Validate required fields
+                        if not (family_name and creator_name and creator_username and creator_password):
+                            st.error("Please fill in all required fields (including password).")
+                        else:
                             try:
+                                # Insert family record
                                 family_id = str(uuid.uuid4())
                                 invite_code = str(uuid.uuid4())[:8].upper()
                                 user_id = str(uuid.uuid4())
@@ -861,31 +855,48 @@ if not check_login():
                                 parental_controls = creator_age < 13
 
                                 c.execute(
-                                    "INSERT INTO families VALUES (?, ?, ?, ?, ?)",
-                                    (family_id, family_name, invite_code,
-                                     creator_username, datetime.now().strftime(
-                                         "%Y-%m-%d %H:%M:%S")))
+                                    "INSERT INTO families (id, name, invite_code, created_by, timestamp) VALUES (?, ?, ?, ?, ?)",
+                                    (
+                                        family_id,
+                                        family_name,
+                                        invite_code,
+                                        creator_username,
+                                        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                    ),
+                                )
 
+                                # Insert user, storing a hashed password
+                                hashed_pw = hashlib.sha256(creator_password.encode()).hexdigest()
                                 c.execute(
-                                    "INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                    (user_id, creator_name, creator_username,
-                                     creator_age, avatar_url, role,
-                                     creator_bio, invite_code,
-                                     parental_controls, None))
+                                    "INSERT INTO users (id, name, username, age, avatar, role, bio, family_code, parental_controls, linked_parent, password_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                    (
+                                        user_id,
+                                        creator_name,
+                                        creator_username,
+                                        creator_age,
+                                        avatar_url,
+                                        role,
+                                        creator_bio,
+                                        invite_code,
+                                        parental_controls,
+                                        None,
+                                        hashed_pw,
+                                    ),
+                                )
 
                                 conn.commit()
 
                                 st.session_state.current_user = {
-                                    'id': user_id,
-                                    'name': creator_name,
-                                    'username': creator_username,
-                                    'age': creator_age,
-                                    'avatar': avatar_url,
-                                    'role': role,
-                                    'bio': creator_bio,
-                                    'family_code': invite_code,
-                                    'parental_controls': parental_controls,
-                                    'linked_parent': None
+                                    "id": user_id,
+                                    "name": creator_name,
+                                    "username": creator_username,
+                                    "age": creator_age,
+                                    "avatar": avatar_url,
+                                    "role": role,
+                                    "bio": creator_bio,
+                                    "family_code": invite_code,
+                                    "parental_controls": parental_controls,
+                                    "linked_parent": None,
                                 }
                                 st.session_state.family_code = invite_code
 
@@ -896,47 +907,32 @@ if not check_login():
                                     <div class="invite-code">{invite_code}</div>
                                     <div style="font-size: 14px; margin-top: 12px; opacity: 0.8;">Share this code with family members to invite them!</div>
                                 </div>
-                                """,
-                                            unsafe_allow_html=True)
+                                """, unsafe_allow_html=True)
 
-                                if st.button("Enter Your Family App",
-                                             use_container_width=True):
+                                if st.button("Enter Your Family App", use_container_width=True):
                                     st.rerun()
 
                             except sqlite3.IntegrityError:
-                                st.error(
-                                    "Username already exists. Please choose a different one."
-                                )
-                        else:
-                            st.error("Please fill in all required fields")
+                                st.error("Username already exists. Please choose a different one.")
 
+            # -------------------
+            # Tab 2: Join Family
+            # -------------------
             with tab2:
                 st.markdown("### Join Your Family")
                 with st.form("join_family", clear_on_submit=True):
-                    invite_code = st.text_input(
-                        "Family Invite Code",
-                        placeholder="Enter 8-character code")
-                    joiner_name = st.text_input("Your Full Name",
-                                                placeholder="Jane Smith")
-                    joiner_username = st.text_input("Choose Username",
-                                                    placeholder="janesmith")
-                    joiner_age = st.number_input("Your Age",
-                                                 min_value=1,
-                                                 max_value=100,
-                                                 value=25)
-                    joiner_bio = st.text_area(
-                        "About You (Optional)",
-                        placeholder="Tell your family about yourself...")
+                    invite_code = st.text_input("Family Invite Code", placeholder="Enter 8-character code")
+                    joiner_name = st.text_input("Your Full Name", placeholder="Jane Smith")
+                    joiner_username = st.text_input("Choose Username", placeholder="janesmith")
+                    joiner_password = st.text_input("Choose Password", type="password", placeholder="••••••")
+                    joiner_age = st.number_input("Your Age", min_value=1, max_value=100, value=25)
+                    joiner_bio = st.text_area("About You (Optional)", placeholder="Tell your family about yourself...")
 
-                    # If user is under 13, require parent linking
+                    # If user is under 13, require parent linking:
                     linked_parent = None
-                    if st.number_input("temp_age",
-                                       min_value=1,
-                                       max_value=100,
-                                       value=joiner_age,
-                                       key="temp_age_check") < 13:
+                    if joiner_age < 13:
                         st.info(
-                            "👨‍👩‍👧 Since you're under 13, you'll need to be linked to a parent account for safety."
+                            "Since you're under 13, you'll need to be linked to a parent account for safety."
                         )
                         family_parents = []
                         if invite_code:
@@ -944,158 +940,135 @@ if not check_login():
                                 """
                                 SELECT username FROM users 
                                 WHERE family_code = ? AND role = 'parent' AND age >= 18
-                            """, (invite_code, )).fetchall()
-
+                                """,
+                                (invite_code,),
+                            ).fetchall()
                         if family_parents:
                             linked_parent = st.selectbox(
-                                "Select Your Parent/Guardian",
-                                [p[0] for p in family_parents])
+                                "Select Your Parent/Guardian", [p[0] for p in family_parents]
+                            )
                         else:
                             st.warning(
                                 "Please ask a parent to create the family first, then try joining."
                             )
 
                     uploaded_file = st.file_uploader(
-                        "Upload Profile Picture",
-                        type=['png', 'jpg', 'jpeg'],
-                        key="join_upload")
+                        "Upload Profile Picture", type=["png", "jpg", "jpeg"], key="join_upload"
+                    )
                     avatar_url = process_uploaded_image(uploaded_file)
-
                     if not avatar_url:
                         avatar_options = [
                             "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
                             "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face",
                             "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-                            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+                            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
                         ]
-                        avatar_url = st.selectbox("Or Choose Default Avatar",
-                                                  avatar_options)
+                        avatar_url = st.selectbox("Or Choose Default Avatar", avatar_options)
 
-                    if st.form_submit_button("Join Family",
-                                             use_container_width=True):
-                        if invite_code and joiner_name and joiner_username:
-                            if joiner_age < 13 and not linked_parent:
-                                st.error(
-                                    "Children under 13 must be linked to a parent account."
-                                )
-                            else:
-                                try:
-                                    family = c.execute(
-                                        "SELECT * FROM families WHERE invite_code = ?",
-                                        (invite_code, )).fetchone()
-                                    if family:
-                                        user_id = str(uuid.uuid4())
-                                        role = "parent" if joiner_age >= 18 else "child"
-                                        parental_controls = joiner_age < 13
-
-                                        c.execute(
-                                            "INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                            (user_id, joiner_name,
-                                             joiner_username, joiner_age,
-                                             avatar_url, role, joiner_bio,
-                                             invite_code, parental_controls,
-                                             linked_parent))
-                                        conn.commit()
-
-                                        st.session_state.current_user = {
-                                            'id': user_id,
-                                            'name': joiner_name,
-                                            'username': joiner_username,
-                                            'age': joiner_age,
-                                            'avatar': avatar_url,
-                                            'role': role,
-                                            'bio': joiner_bio,
-                                            'family_code': invite_code,
-                                            'parental_controls':
-                                            parental_controls,
-                                            'linked_parent': linked_parent
-                                        }
-                                        st.session_state.family_code = invite_code
-
-                                        st.success(
-                                            f"Welcome to the {family[1]} family! 🎉"
-                                        )
-                                        st.rerun()
-                                    else:
-                                        st.error(
-                                            "Invalid invite code. Please check and try again."
-                                        )
-                                except sqlite3.IntegrityError:
-                                    st.error(
-                                        "Username already exists. Please choose a different one."
-                                    )
+                    if st.form_submit_button("Join Family", use_container_width=True):
+                        # Validate required fields
+                        if not (invite_code and joiner_name and joiner_username and joiner_password):
+                            st.error("Please fill in all required fields (including password).")
+                        elif joiner_age < 13 and not linked_parent:
+                            st.error("Children under 13 must be linked to a parent account.")
                         else:
-                            st.error("Please fill in all required fields")
+                            try:
+                                family = c.execute(
+                                    "SELECT * FROM families WHERE invite_code = ?", (invite_code,)
+                                ).fetchone()
+                                if family:
+                                    user_id = str(uuid.uuid4())
+                                    role = "parent" if joiner_age >= 18 else "child"
+                                    parental_controls = joiner_age < 13
+                                    hashed_pw = hashlib.sha256(joiner_password.encode()).hexdigest()
 
+                                    c.execute(
+                                        "INSERT INTO users (id, name, username, age, avatar, role, bio, family_code, parental_controls, linked_parent, password_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                        (
+                                            user_id,
+                                            joiner_name,
+                                            joiner_username,
+                                            joiner_age,
+                                            avatar_url,
+                                            role,
+                                            joiner_bio,
+                                            invite_code,
+                                            parental_controls,
+                                            linked_parent,
+                                            hashed_pw,
+                                        ),
+                                    )
+                                    conn.commit()
+
+                                    st.session_state.current_user = {
+                                        "id": user_id,
+                                        "name": joiner_name,
+                                        "username": joiner_username,
+                                        "age": joiner_age,
+                                        "avatar": avatar_url,
+                                        "role": role,
+                                        "bio": joiner_bio,
+                                        "family_code": invite_code,
+                                        "parental_controls": parental_controls,
+                                        "linked_parent": linked_parent,
+                                    }
+                                    st.session_state.family_code = invite_code
+
+                                    st.success(f"Welcome to the {family[1]} family! 🎉")
+                                    st.rerun()
+                                else:
+                                    st.error("Invalid invite code. Please check and try again.")
+                            except sqlite3.IntegrityError:
+                                st.error("Username already exists. Please choose a different one.")
+
+            # --------------
+            # Tab 3: Sign In
+            # --------------
             with tab3:
                 st.markdown("### Welcome Back")
                 with st.form("login", clear_on_submit=True):
-                    username = st.text_input("Username",
-                                             placeholder="Enter your username")
+                    username = st.text_input("Username", placeholder="Enter your username")
+                    password = st.text_input("Password", type="password", placeholder="••••••")
 
-                    if st.form_submit_button("Sign In",
-                                             use_container_width=True):
-                        if username:
-                            user = c.execute(
-                                "SELECT * FROM users WHERE username = ?",
-                                (username, )).fetchone()
-                            if user:
-                                st.session_state.current_user = {
-                                    'id':
-                                    user[0],
-                                    'name':
-                                    user[1],
-                                    'username':
-                                    user[2],
-                                    'age':
-                                    user[3],
-                                    'avatar':
-                                    user[4],
-                                    'role':
-                                    user[5],
-                                    'bio':
-                                    user[6],
-                                    'family_code':
-                                    user[7],
-                                    'parental_controls':
-                                    bool(user[8])
-                                    if len(user) > 8 else user[3] < 13,
-                                    'linked_parent':
-                                    user[9] if len(user) > 9 else None
-                                }
-                                st.session_state.family_code = user[7]
-                                st.rerun()
-                            else:
-                                st.error(
-                                    "User not found. Please check your username or create a new account."
-                                )
+                    if st.form_submit_button("Sign In", use_container_width=True):
+                        if not (username and password):
+                            st.error("Please enter both username and password.")
                         else:
-                            st.error("Please enter your username")
+                            # Look up user by username
+                            row = c.execute(
+                                "SELECT id, name, username, age, avatar, role, bio, family_code, parental_controls, linked_parent, password_hash FROM users WHERE username = ?",
+                                (username,),
+                            ).fetchone()
+                            if row:
+                                stored_hash = row[10]
+                                if hashlib.sha256(password.encode()).hexdigest() == stored_hash:
+                                    # Password correct → log in
+                                    st.session_state.current_user = {
+                                        "id": row[0],
+                                        "name": row[1],
+                                        "username": row[2],
+                                        "age": row[3],
+                                        "avatar": row[4],
+                                        "role": row[5],
+                                        "bio": row[6],
+                                        "family_code": row[7],
+                                        "parental_controls": bool(row[8]),
+                                        "linked_parent": row[9],
+                                    }
+                                    st.session_state.family_code = row[7]
+                                    st.success("Successfully signed in! 🎉")
+                                    st.session_state.page = "Feed"
+                                    st.rerun()
+                                else:
+                                    st.error("Incorrect password.")
+                            else:
+                                st.error("User not found. Please check your username or create a new account.")
 
+        # Close the <div class="app-container">
         st.markdown('</div>', unsafe_allow_html=True)
+
+        # Halt execution here so the rest of the app doesn’t render until login is done
         st.stop()
-
-# Main app container
-st.markdown('<div class="app-container">', unsafe_allow_html=True)
-
-# Header
-user = st.session_state.get("current_user")
-if user:
-    st.markdown(f"""
-    <div class="header">
-        <div class="logo">Together</div>
-        <div class="user-info">
-            <img src="{user['avatar']}" class="user-avatar">
-            <div>
-                <div style="font-weight: 600; font-size: 16px;">{user['username']}</div>
-                <div style="font-size: 12px; color: #8e8e8e;">{user['role'].title()}</div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-else:
-    st.warning("User not logged in.")
-
 # Parental controls indicator for children
 if has_parental_controls():
     st.markdown("""
